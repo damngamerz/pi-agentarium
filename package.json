@@ -1,6 +1,6 @@
 {
   "name": "pi-agentarium",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Ambient multi-agent observability for Pi — a terminal habitat for coding agents.",
   "type": "module",
   "author": "damngamerz",
