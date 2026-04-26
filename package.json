@@ -29,7 +29,8 @@
   "pi": {
     "extensions": [
       "./src/index.ts"
-    ]
+    ],
+    "video": "https://raw.githubusercontent.com/damngamerz/pi-agentarium/main/assets/demo.mp4"
   },
   "files": [
     "src",
