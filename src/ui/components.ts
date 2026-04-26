@@ -52,7 +52,7 @@ function phaseGlyph(phase: AgentPhase): string {
 function phaseText(phase: AgentPhase): string {
   switch (phase) {
     case "idle":
-      return water.dim("quiet pond");
+      return water.dim("resting pond");
     case "thinking":
       return water.glow("thinking");
     case "tool":
@@ -163,13 +163,13 @@ function renderCanvas(canvas: string[][], width: number): string[] {
   return canvas.map((row) => fit(row.join(""), width));
 }
 
-function fillWater(canvas: string[][], frame: number, quiet = false): void {
+function fillWater(canvas: string[][], frame: number, compact = false): void {
   const height = canvas.length;
   const width = canvas[0]?.length ?? 0;
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const wave = Math.sin((x + frame * 0.55) / 8 + y * 1.7) + Math.sin((x - frame * 0.21) / 17 - y * 0.9);
-      const sparkle = hashString(`${Math.floor(frame / 5)}:${x}:${y}`) % (quiet ? 83 : 47);
+      const sparkle = hashString(`${Math.floor(frame / 5)}:${x}:${y}`) % (compact ? 83 : 47);
       if (sparkle === 0) canvas[y][x] = water.glow("◦");
       else if (sparkle === 1) canvas[y][x] = water.dim("·");
       else if (Math.abs(wave) < 0.045 && (x + y + Math.floor(frame / 3)) % 3 === 0) canvas[y][x] = water.deep("~");
@@ -616,7 +616,7 @@ function renderAgentariumScene(
 }
 
 function renderSummary(records: AgentRecord[], width: number): string[] {
-  if (records.length === 0) return [fit(water.dim("no live agents yet"), width)];
+  if (records.length === 0) return [fit(water.dim("awaiting live agents"), width)];
   const lines: string[] = [];
   const chunks = records.slice(0, 8).map((record) => {
     const status = record.currentTool ?? record.phase;
@@ -763,7 +763,7 @@ export class AgentariumOverlay implements Component {
     const border = (s: string) => water.deep(s);
     const row = (content: string) => `${border("│")}${fit(content, inner)}${border("│")}`;
 
-    const viewName = this.view === "flowers" ? "wildflower meadow" : this.view === "pond" ? "koi pond" : this.view === "constellation" ? "constellation" : "zen sand";
+    const viewName = this.view === "flowers" ? "wildflower meadow" : this.view === "pond" ? "koi pond" : this.view === "constellation" ? "constellation" : "sand";
     const title = `${bold(water.glow("Agentarium"))} ${water.dim("—")} ${water.ink(viewName)} ${this.demo ? water.gold(" demo") : ""}`;
     const health = gardenHealth(records, this.state.getGardenStats());
     const subtitle = this.view === "flowers"

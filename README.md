@@ -1,8 +1,8 @@
 # pi-agentarium
 
-> Ambient multi-agent observability for Pi — a calm terminal habitat for your coding agents.
+> Ambient multi-agent observability for Pi — a terminal habitat for your coding agents.
 
-`pi-agentarium` turns agent activity into a small living terminal habitat. It is not an arcade game and it is not a needy virtual pet: it is a low-noise, professional, hypnotic visualization layer for waiting on coding agents.
+`pi-agentarium` turns agent activity into a small living terminal habitat: a professional visualization layer for observing coding agents while they work.
 
 When Pi thinks, runs tools, or finishes a turn, the meadow blooms and the pond ripples. When several Pi sessions are running, each one becomes a plant, fish, star, or stone in the shared habitat.
 
@@ -19,10 +19,10 @@ The demo shows the ambient overlay cycling through flowers, pond, constellation,
 - **Persistent garden memory** across Pi sessions via `~/.pi/agent/agentarium/garden-events.jsonl`
 - **Koi pond overlay** with bubbles, ripples, and living agent fish
 - **Constellation dashboard** for multi-agent workflows
-- **Zen sand view** for a quieter screensaver feel
+- **Sand view** for a minimal ambient display
 - **Multi-agent heartbeat** via `~/.pi/agent/agentarium/agents/*.json`
-- **Low resource usage**: small timers, no heavy dependencies, no sound by default
-- **Non-intrusive**: the widget does not capture keyboard input; overlay is opened manually
+- **Low resource usage**: small timers and dependency-minimal design
+- **Passive display**: the widget does not capture keyboard input; overlay is opened manually
 
 ## Install
 
@@ -64,7 +64,7 @@ pi -e ./src/index.ts
 | `/agentarium pond` | Open koi pond view |
 | `/agentarium constellation` | Open multi-agent constellation |
 | `/agentarium dashboard` | Alias for constellation/dashboard view |
-| `/agentarium sand` | Open zen sand view |
+| `/agentarium sand` | Open sand view |
 | `/agentarium demo` | Open with simulated agent activity |
 | `/agentarium mode flowers` | Set the bottom widget mode without opening overlay |
 | `/agentarium mode pond` | Set the bottom widget to pond |
@@ -75,6 +75,7 @@ pi -e ./src/index.ts
 | `/agentarium above` | Put widget above editor |
 | `/agentarium below` | Put widget below editor |
 | `/agentarium status` | Show current status |
+| `/agentarium stats` | Show lifetime Agentarium counters |
 
 Shortcut:
 
@@ -114,24 +115,27 @@ To set the ambient bottom widget without opening the overlay:
 /agentarium mode sand
 ```
 
+Mode, widget placement, and widget enabled state are saved across Pi sessions.
+
 ## Design notes
 
-Agentarium deliberately avoids noisy game mechanics:
+Agentarium focuses on ambient observability:
 
-- no XP bar by default
-- no hunger meter
-- no surprise sounds
-- no auto-opening modal
-- no high-cognitive-load puzzles
+- passive widget while agents are active
+- manual overlay for focused inspection
+- terminal-friendly glyphs and colors
+- lightweight timers and file-based heartbeat sharing
+- useful activity signals without requiring attention
 
-The goal is to make waiting feel calm while still conveying useful agent state.
+The goal is to make agent work easier to follow while preserving the terminal workflow.
 
 ## Persistence
 
-Agentarium has two layers of state:
+Agentarium has three layers of local state:
 
 - **Live agent presence** is stored in `~/.pi/agent/agentarium/agents/*.json` and expires/removes when agents stop.
-- **Garden health** is stored permanently in `~/.pi/agent/agentarium/garden-events.jsonl`.
+- **Meadow health** is stored permanently in `~/.pi/agent/agentarium/garden-events.jsonl`.
+- **Display preferences** are stored in `~/.pi/agent/agentarium/config.json`.
 
 That means the meadow can keep getting healthier across Pi sessions, projects, reloads, and restarts. Tool calls, turns, completions, user bash activity, and errors are appended as tiny JSONL events.
 
@@ -139,7 +143,7 @@ That means the meadow can keep getting healthier across Pi sessions, projects, r
 
 | State | Visual |
 |---|---|
-| Idle | calm stem/fish/star/stone |
+| Idle | resting stem/fish/star/stone |
 | Thinking | blue bud / gentle pulse |
 | Tool running | golden flowers, bees, pollen, activity |
 | Completed turn | green bloom/ripple |
@@ -157,6 +161,7 @@ pi-agentarium/
     state.ts
     heartbeat.ts
     garden-memory.ts
+    config-memory.ts
     types.ts
     ui/components.ts
 ```

@@ -1,7 +1,7 @@
 {
   "name": "pi-agentarium",
   "version": "0.1.4",
-  "description": "Ambient multi-agent observability for Pi — a calm terminal habitat for coding agents.",
+  "description": "Ambient multi-agent observability for Pi — a terminal habitat for coding agents.",
   "type": "module",
   "author": "damngamerz",
   "license": "MIT",

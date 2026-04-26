@@ -1,5 +1,6 @@
 import type { AutocompleteItem } from "@mariozechner/pi-tui";
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
+import { loadAgentariumConfig, saveAgentariumConfig } from "./config-memory.js";
 import { cleanupStaleHeartbeats, HeartbeatStore } from "./heartbeat.js";
 import { GardenMemory } from "./garden-memory.js";
 import { AgentariumState } from "./state.js";
@@ -10,7 +11,7 @@ const COMMANDS: AutocompleteItem[] = [
   { value: "flowers", label: "flowers", description: "Open the living wildflower meadow" },
   { value: "pond", label: "pond", description: "Open the koi pond view" },
   { value: "constellation", label: "constellation", description: "Open the multi-agent constellation" },
-  { value: "sand", label: "sand", description: "Open the zen sand view" },
+  { value: "sand", label: "sand", description: "Open the sand view" },
   { value: "dashboard", label: "dashboard", description: "Open the multi-agent dashboard" },
   { value: "demo", label: "demo", description: "Open with simulated agent activity" },
   { value: "mode", label: "mode", description: "Set the bottom widget mode without opening the overlay" },
@@ -21,6 +22,7 @@ const COMMANDS: AutocompleteItem[] = [
   { value: "on", label: "on", description: "Enable the ambient widget" },
   { value: "off", label: "off", description: "Disable the ambient widget" },
   { value: "status", label: "status", description: "Show current Agentarium status" },
+  { value: "stats", label: "stats", description: "Show persistent garden activity counters" },
   { value: "above", label: "above", description: "Place the ambient widget above the editor" },
   { value: "below", label: "below", description: "Place the ambient widget below the editor" },
 ];
@@ -32,6 +34,25 @@ function normalizeView(input: string | undefined): AgentariumView | undefined {
   if (value === "constellation" || value === "sky" || value === "dashboard") return "constellation";
   if (value === "sand") return "sand";
   return undefined;
+}
+
+function formatStats(state: AgentariumState): string {
+  const stats = state.getGardenStats();
+  const firstSeen = stats.firstSeenAt ? new Date(stats.firstSeenAt).toLocaleString() : "not yet";
+  const updated = stats.updatedAt ? new Date(stats.updatedAt).toLocaleString() : "not yet";
+  return [
+    "Agentarium stats",
+    `mode: ${state.config.view}`,
+    `widget: ${state.config.enabled ? "enabled" : "disabled"} · ${state.config.widgetPlacement}`,
+    `agent starts: ${stats.totalAgentStarts}`,
+    `turns: ${stats.totalTurns}`,
+    `tool calls: ${stats.totalTools}`,
+    `completions: ${stats.totalCompletions}`,
+    `errors: ${stats.totalErrors}`,
+    `user bash commands: ${stats.totalUserBash}`,
+    `first seen: ${firstSeen}`,
+    `updated: ${updated}`,
+  ].join("\n");
 }
 
 function installWidget(ctx: ExtensionContext, state: AgentariumState): void {
@@ -79,13 +100,29 @@ export default function agentarium(pi: ExtensionAPI) {
   const gardenMemory = new GardenMemory(state);
   let settleTimer: ReturnType<typeof setTimeout> | undefined;
   let statusCtx: ExtensionContext | undefined;
+  let lastConfigJson = JSON.stringify(state.config);
+  let configSaveTimer: ReturnType<typeof setTimeout> | undefined;
 
   const refreshStatus = () => {
     if (!statusCtx?.hasUI) return;
     statusCtx.ui.setStatus("agentarium", state.config.enabled ? formatStatus(state) : undefined);
   };
 
-  state.subscribe(refreshStatus);
+  const scheduleConfigSave = () => {
+    const next = JSON.stringify(state.config);
+    if (next === lastConfigJson) return;
+    lastConfigJson = next;
+    if (configSaveTimer) clearTimeout(configSaveTimer);
+    configSaveTimer = setTimeout(() => {
+      configSaveTimer = undefined;
+      void saveAgentariumConfig(state.config);
+    }, 200);
+  };
+
+  state.subscribe(() => {
+    refreshStatus();
+    scheduleConfigSave();
+  });
 
   const scheduleSettle = () => {
     if (settleTimer) clearTimeout(settleTimer);
@@ -95,21 +132,26 @@ export default function agentarium(pi: ExtensionAPI) {
   pi.registerFlag("agentarium", {
     description: "Enable Agentarium ambient agent habitat",
     type: "boolean",
-    default: true,
   });
 
   pi.registerFlag("agentarium-view", {
     description: "Default Agentarium view: flowers, pond, constellation, or sand",
     type: "string",
-    default: "flowers",
   });
 
   pi.on("session_start", async (_event, ctx) => {
     statusCtx = ctx;
     state.setContext(ctx, pi.getSessionName());
+
+    const savedConfig = await loadAgentariumConfig();
+    if (typeof savedConfig.enabled === "boolean") state.setEnabled(savedConfig.enabled);
+    if (savedConfig.view) state.setView(savedConfig.view);
+    if (savedConfig.widgetPlacement) state.setPlacement(savedConfig.widgetPlacement);
+
     const flagEnabled = pi.getFlag("agentarium");
     if (typeof flagEnabled === "boolean") state.setEnabled(flagEnabled);
-    const flagView = normalizeView(String(pi.getFlag("agentarium-view") ?? "flowers"));
+    const flagViewRaw = pi.getFlag("agentarium-view");
+    const flagView = typeof flagViewRaw === "string" ? normalizeView(flagViewRaw) : undefined;
     if (flagView) state.setView(flagView);
 
     await cleanupStaleHeartbeats();
@@ -158,6 +200,11 @@ export default function agentarium(pi: ExtensionAPI) {
 
   pi.on("session_shutdown", async (event, ctx) => {
     if (settleTimer) clearTimeout(settleTimer);
+    if (configSaveTimer) {
+      clearTimeout(configSaveTimer);
+      configSaveTimer = undefined;
+      await saveAgentariumConfig(state.config);
+    }
     if (ctx.hasUI) {
       ctx.ui.setWidget("agentarium", undefined);
       ctx.ui.setStatus("agentarium", undefined);
@@ -168,7 +215,7 @@ export default function agentarium(pi: ExtensionAPI) {
   });
 
   pi.registerCommand("agentarium", {
-    description: "Open Agentarium — a calm ambient multi-agent habitat.",
+    description: "Open Agentarium — an ambient multi-agent habitat.",
     getArgumentCompletions(prefix: string): AutocompleteItem[] {
       const p = prefix.trim().toLowerCase();
       return COMMANDS.filter((item) => item.value.startsWith(p) || item.label.toLowerCase().startsWith(p));
@@ -216,6 +263,11 @@ export default function agentarium(pi: ExtensionAPI) {
         return;
       }
 
+      if (first === "stats") {
+        ctx.ui.notify(formatStats(state), "info");
+        return;
+      }
+
       if (first === "mode" || first === "set" || first === "widget") {
         const view = normalizeView(second);
         if (!view) {
@@ -240,7 +292,7 @@ export default function agentarium(pi: ExtensionAPI) {
         return;
       }
 
-      ctx.ui.notify("Usage: /agentarium [flowers|pond|constellation|sand|dashboard|demo|mode|on|off|above|below|status]", "info");
+      ctx.ui.notify("Usage: /agentarium [flowers|pond|constellation|sand|dashboard|demo|mode|on|off|above|below|status|stats]", "info");
     },
   });
 

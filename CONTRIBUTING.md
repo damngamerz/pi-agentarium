@@ -87,13 +87,13 @@ pi --list-models __agentarium_load_probe__
 - Avoid committing generated files, local config, logs, or `node_modules`.
 - Keep terminal rendering width-safe and friendly to tmux/SSH environments.
 - Avoid emoji for core UI elements unless there is a stable fallback.
-- Do not add sounds, auto-opening modals, or intrusive behavior by default.
+- Keep default behavior passive and workflow-friendly.
 
 ## Visual changes
 
 For UI, ASCII art, animation, or color changes, please include a screenshot, terminal recording, or a short description of the before/after behavior.
 
-Agentarium aims to be calm, professional, and non-intrusive. Visual changes should preserve that tone.
+Agentarium aims to be professional, readable, and workflow-friendly. Visual changes should preserve that tone.
 
 ## Documentation changes
 
