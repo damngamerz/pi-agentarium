@@ -1,0 +1,56 @@
+{
+  "name": "pi-agentarium",
+  "version": "0.1.0",
+  "description": "Ambient multi-agent observability for Pi — a calm terminal habitat for coding agents.",
+  "type": "module",
+  "author": "damngamerz",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/damngamerz/pi-agentarium.git"
+  },
+  "homepage": "https://github.com/damngamerz/pi-agentarium#readme",
+  "bugs": {
+    "url": "https://github.com/damngamerz/pi-agentarium/issues"
+  },
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "agentarium",
+    "ambient",
+    "observability",
+    "multi-agent",
+    "terminal",
+    "tui",
+    "dashboard",
+    "meadow",
+    "agents"
+  ],
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE",
+    "CONTRIBUTING.md",
+    "SECURITY.md"
+  ],
+  "peerDependencies": {
+    "@mariozechner/pi-coding-agent": "*",
+    "@mariozechner/pi-tui": "*"
+  },
+  "devDependencies": {
+    "@mariozechner/pi-coding-agent": "*",
+    "@mariozechner/pi-tui": "*",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "pack:dry-run": "npm pack --dry-run",
+    "release:check": "npm run typecheck && npm run pack:dry-run"
+  }
+}
