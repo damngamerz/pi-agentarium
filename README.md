@@ -6,9 +6,15 @@
 
 When Pi thinks, runs tools, or finishes a turn, the meadow blooms and the pond ripples. When several Pi sessions are running, each one becomes a plant, fish, star, or stone in the shared habitat.
 
+## Demo
+
+[Watch the Agentarium demo](./assets/demo.mp4)
+
+The demo shows the ambient overlay cycling through flowers, pond, constellation, and sand modes. The same MP4 is used as the Pi package gallery preview.
+
 ## Features
 
-- **Ambient widget** below the editor while agents are active
+- **Ambient widget** below the editor while agents are active; hidden at startup and idle
 - **Wildflower meadow** where agent usage grows healthier plants and attracts wildlife
 - **Persistent garden memory** across Pi sessions via `~/.pi/agent/agentarium/garden-events.jsonl`
 - **Koi pond overlay** with bubbles, ripples, and living agent fish

@@ -661,7 +661,7 @@ export class AgentariumWidget implements Component {
   render(width: number): string[] {
     const local = this.state.toRecord();
     const records = mergeRecords(this.records, local);
-    if (!this.state.shouldShowWidget(records.length)) return [];
+    if (!this.state.shouldShowWidget(records)) return [];
     if (width < 28) return [fit(`${water.teal("◦")} ${water.ink("Agentarium")} ${phaseText(local.phase)}`, width)];
 
     const active = records.filter((record) => record.phase !== "idle").length;

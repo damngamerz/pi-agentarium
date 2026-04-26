@@ -198,10 +198,13 @@ export class AgentariumState {
     };
   }
 
-  shouldShowWidget(activeAgentCount: number, now = Date.now()): boolean {
+  shouldShowWidget(records: readonly Pick<AgentRecord, "phase">[], now = Date.now()): boolean {
     if (!this.config.enabled) return false;
-    if (activeAgentCount > 1) return true;
-    if (this.phase === "tool" || this.phase === "thinking") return true;
+
+    // Do not show at Pi startup just because idle heartbeat files exist.
+    // The widget is ambient activity feedback, so it appears only while an
+    // agent is actively thinking/tooling, plus a brief local completion tail.
+    if (records.some((record) => record.phase === "tool" || record.phase === "thinking")) return true;
     if ((this.phase === "done" || this.phase === "error") && now - this.updatedAt < 9_000) return true;
     return false;
   }
