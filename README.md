@@ -8,12 +8,9 @@ When Pi thinks, runs tools, or finishes a turn, the meadow blooms and the pond r
 
 ## Demo
 
-![Agentarium demo](https://raw.githubusercontent.com/damngamerz/pi-agentarium/main/assets/demo.gif)
+![Agentarium demo](./assets/demo.gif)
 
 The demo shows the ambient overlay cycling through flowers, pond, constellation, and sand modes.
-
-- [Direct MP4 demo](https://raw.githubusercontent.com/damngamerz/pi-agentarium/main/assets/demo.mp4)
-- The MP4 is also used as the Pi package gallery preview.
 
 ## Features
 
