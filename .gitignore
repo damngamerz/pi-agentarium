@@ -2,4 +2,3 @@ node_modules/
 *.tgz
 .DS_Store
 assets/demo.cast
-assets/demo.gif
